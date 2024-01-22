@@ -27,7 +27,25 @@ export async function saveMeal(meal) {
 
   const bufferedImage = await meal.image.arrayBuffer();
 
-  stream.write(Buffer.from(bufferedImage));
+  stream.write(Buffer.from(bufferedImage), (error) => {
+    if (error) {
+      throw new Error("Saving image failed!");
+    }
+  });
 
+  meal.image = `/images/${fileName}`
 
+  db.prepare(`
+    INSERT INTO meals 
+      (title, sumary, instructions, creator, creator_email, image, slug)
+    VALUE (
+      @title,
+      @summary,
+      @instructions,
+      @creator,
+      @creator_email
+      @image,
+      @slug
+    )
+  `).run(meal);
 }
